@@ -1,7 +1,6 @@
 package com.example.kheehub;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -12,7 +11,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.kheehub.model.Toilet;
+import com.example.kheehub.viewmodel.MapViewModel;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -21,12 +23,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -34,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ConstraintLayout mapContainer;
     private View listContainer;
     private View profileContainer;
+    private MapViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         
+        viewModel = new ViewModelProvider(this).get(MapViewModel.class);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         setupUI();
+        observeViewModel();
     }
 
     private void setupUI() {
@@ -88,16 +90,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // FAB: Toggle Satellite/Normal View
         FloatingActionButton fabLayers = findViewById(R.id.fab_layers);
-        fabLayers.setOnClickListener(v -> {
-            if (mMap != null) {
-                int type = mMap.getMapType();
-                if (type == GoogleMap.MAP_TYPE_NORMAL) {
-                    mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-                } else {
-                    mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                }
-            }
-        });
+        fabLayers.setOnClickListener(v -> viewModel.toggleMapType());
 
         // Custom Zoom Controls
         findViewById(R.id.btn_zoom_in).setOnClickListener(v -> {
@@ -113,35 +106,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private void observeViewModel() {
+        viewModel.getMapType().observe(this, type -> {
+            if (mMap != null) {
+                mMap.setMapType(type);
+            }
+        });
+
+        viewModel.getToilets().observe(this, this::updateMarkers);
+    }
+
+    private void updateMarkers(List<Toilet> toilets) {
+        if (mMap == null || toilets == null) return;
+        mMap.clear();
+        for (Toilet toilet : toilets) {
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(toilet.getLat(), toilet.getLng()))
+                    .title(toilet.getName()));
+        }
+    }
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
         // UI Settings
-        mMap.getUiSettings().setZoomControlsEnabled(false); // Hide default ones
+        mMap.getUiSettings().setZoomControlsEnabled(false); 
         mMap.getUiSettings().setZoomGesturesEnabled(true);
 
         // Default position
         LatLng defaultLocation = new LatLng(1.3521, 103.8198);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12));
 
-        loadToiletMarkers();
-    }
-
-    private void loadToiletMarkers() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("toilets")
-                .get()
-                .addOnSuccessListener(result -> {
-                    for (DocumentSnapshot document : result) {
-                        Double lat = document.getDouble("lat");
-                        Double lng = document.getDouble("lng");
-                        String name = document.getString("name");
-                        if (lat != null && lng != null) {
-                            LatLng pos = new LatLng(lat, lng);
-                            mMap.addMarker(new MarkerOptions().position(pos).title(name));
-                        }
-                    }
-                });
+        // Sync initial map type and markers
+        if (viewModel.getMapType().getValue() != null) {
+            mMap.setMapType(viewModel.getMapType().getValue());
+        }
+        updateMarkers(viewModel.getToilets().getValue());
     }
 }
