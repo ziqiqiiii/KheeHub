@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText android:id="@+id/et_name"   android:hint="Name"      android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/et_floor"  android:hint="Floor"     android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/et_lat"    android:hint="Latitude"  android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/et_lng"    android:hint="Longitude" android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/et_rating" android:hint="Rating"    android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <Button   android:id="@+id/btn_add"   android:text="Add Toilet" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+</LinearLayout>
