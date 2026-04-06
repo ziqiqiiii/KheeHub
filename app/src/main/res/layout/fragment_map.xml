@@ -5,20 +5,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Map -->
+
+    <!-- Search Bar -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
-    <!--search-bar-->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_margin="16dp"
+        android:layout_gravity="top"
         app:cardCornerRadius="25dp"
-        app:cardElevation="8dp"
-        android:layout_gravity="top">
+        app:cardElevation="6dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,58 +33,104 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_search"
-                app:tint="#757575"/>
+                android:importantForAccessibility="no"
+                app:tint="#757575" />
 
             <EditText
                 android:id="@+id/et_search"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:hint="Search by name or floor..."
                 android:paddingStart="12dp"
                 android:inputType="text"
                 android:imeOptions="actionSearch"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:singleLine="true" />
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
 
-    <!--bottom-sheet-->
+    <!-- Find Nearest FAB (floats above bottom sheet) -->
+
+    <!-- Bottom Sheet -->
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btn_nearest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="100dp"
+        android:text="Find Nearest Toilet"
+        android:textColor="@android:color/white"
+        app:backgroundTint="#4CAF50"
+        app:icon="@android:drawable/ic_menu_mylocation"
+        app:iconTint="@android:color/white" />
+
     <LinearLayout
         android:id="@+id/bottom_sheet_layout"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="#FFFFFF"
+        android:layout_height="400dp"
+        android:background="@drawable/bottom_sheet_bg"
+        android:elevation="50dp"
         android:orientation="vertical"
-        android:padding="24dp"
+        android:padding="20dp"
         app:behavior_hideable="true"
-        app:behavior_peekHeight="180dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-        android:elevation="16dp">
+        app:behavior_peekHeight="500dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
+        <!-- Drag handle -->
         <View
             android:layout_width="40dp"
             android:layout_height="4dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:background="#E0E0E0" />
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/drag_handle_bg" />
 
+        <!-- Toilet name -->
         <TextView
             android:id="@+id/tv_toilet_name"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Toilet Name"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#000000"/>
+            android:text="Select a toilet"
+            android:textColor="#212121"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
+        <!-- Floor / Rating -->
         <TextView
             android:id="@+id/tv_toilet_details"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Floor / Rating"
-            android:layout_marginTop="8dp"
-            android:textSize="16sp"/>
+            android:layout_marginTop="6dp"
+            android:text="Tap a marker or use search"
+            android:textColor="#757575"
+            android:textSize="14sp" />
+
+        <!-- Action buttons row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="start"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_directions"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Directions"
+                app:icon="@android:drawable/ic_menu_directions" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_details"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Details" />
+        </LinearLayout>
 
     </LinearLayout>
 
