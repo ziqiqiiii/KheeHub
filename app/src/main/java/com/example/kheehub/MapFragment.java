@@ -297,12 +297,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         tvToiletDetails.setText(detailsStr);
 
         // 2. Status (1 = Available, 0 = Not Available)
-        if (toilet.status == 1) {
-            tvStatus.setText("Available");
+        if (toilet.status == 1 && isCurrentlyOpen(toilet.openingHours)) {
+            tvStatus.setText("Open");
             tvStatus.setTextColor(0xFF388E3C); // Green text
             tvStatus.setBackgroundColor(0xFFE8F5E9); // Light Green box
-        } else {
-            tvStatus.setText("Not Available");
+        }
+        else if (toilet.status == 1 && !isCurrentlyOpen(toilet.openingHours)) {
+            tvStatus.setText("Close");
+            tvStatus.setTextColor(0xFFF57C00); // Orange text
+            tvStatus.setBackgroundColor(0xFFFFE0B2); // Light Orange box
+        }
+        else {
+            tvStatus.setText("Under Construction");
             tvStatus.setTextColor(0xFFD32F2F); // Red text
             tvStatus.setBackgroundColor(0xFFFFEBEE); // Light Red box
         }
