@@ -15,6 +15,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
+import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -113,6 +114,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             if (imm != null) imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
         });
 
+        ImageView btnSearchIcon = view.findViewById(R.id.btn_search_icon);
+        if (btnSearchIcon != null) {
+            btnSearchIcon.setOnClickListener(v -> executeSearch(etSearch));
+        }
+
+//        etSearch.setOnEditorActionListener((v, actionId, event) -> {
+//            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+//                executeSearch(etSearch);
+//                return true;
+//            }
+//            return false;
+//        });
+
+
+
         // Keep the IME search action as fallback
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -136,6 +152,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         ImageButton btnFilter = view.findViewById(R.id.btn_filter);
         if (btnFilter != null) {
             btnFilter.setOnClickListener(v -> showFilterDialog());
+        }
+    }
+
+    private void executeSearch(EditText etSearch) {
+        String query = etSearch.getText().toString().trim().toLowerCase();
+
+        if (!query.isEmpty()) {
+            searchForToilet(query);
+        }
+
+        InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
         }
     }
 
