@@ -133,10 +133,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             }
         });
 
-//        ImageButton btnFilter = view.findViewById(R.id.btn_filter);
-//        if (btnFilter != null) {
-//            btnFilter.setOnClickListener(v -> showFilterDialog());
-//        }
+        ImageButton btnFilter = view.findViewById(R.id.btn_filter);
+        if (btnFilter != null) {
+            btnFilter.setOnClickListener(v -> showFilterDialog());
+        }
     }
 
     private void findNearestToilet() {

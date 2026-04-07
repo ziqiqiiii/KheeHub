@@ -38,7 +38,7 @@
 
             <AutoCompleteTextView
                 android:id="@+id/et_search"
-                android:layout_width="match_parent"
+                android:layout_width="290dp"
                 android:layout_height="wrap_content"
                 android:hint="Search toilets..."
                 android:imeOptions="actionSearch"
@@ -46,13 +46,13 @@
                 android:completionThreshold="1"
                 android:dropDownVerticalOffset="4dp" />
 
-<!--            <ImageButton-->
-<!--                android:id="@+id/btn_filter"-->
-<!--                android:layout_width="36dp"-->
-<!--                android:layout_height="36dp"-->
-<!--                android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--                android:src="@android:drawable/ic_menu_sort_by_size"-->
-<!--                app:tint="#000000" />-->
+            <ImageButton
+                android:id="@+id/btn_filter"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                app:tint="#000000" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
