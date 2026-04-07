@@ -3,6 +3,7 @@ package com.example.kheehub;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -140,6 +141,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             float minDistance = Float.MAX_VALUE;
 
             for (Toilet t : allToilets) {
+                //Log.d("DEBUGGG1", t.toString());
                 boolean matchesTags = true;
                 for (String requiredTag : currentSelectedTags) {
                     if (t.tags == null || !t.tags.contains(requiredTag)) {
@@ -147,14 +149,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                         break;
                     }
                 }
-
+                //Log.d("DEBUGGG2", "Status: " + t.status);
                 boolean matchesOpen = true;
-                if (isFilterOpenNow) {
-                    if (t.status != 1 || !isCurrentlyOpen(t.openingHours)) {
+                //if (isFilterOpenNow) {
+                    if (t.status == 0 || !isCurrentlyOpen(t.openingHours)) {
                         matchesOpen = false;
+                        //Log.d("DEBUGGG3", t.toString());
+                        continue; // try
                     }
-                }
-
+                //}
+//                Log.d("DEBUGGG3", t.toString());
                 if (!matchesTags || !matchesOpen) {
                     continue;
                 }
@@ -201,12 +205,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
                     allMarkers.clear(); // Clear the list before adding
                     for (Toilet t : allToilets) {
+                        // Determine color based on isCurrentlyOpen
+                        float markerColor = isCurrentlyOpen(t.openingHours) ?
+                                BitmapDescriptorFactory.HUE_RED :  // Open = Red
+                                BitmapDescriptorFactory.HUE_ROSE;  // Closed = Light Red
+
                         Marker marker = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(t.lat, t.lng))
-                                .title(t.name));
+                                .title(t.name)
+                                .icon(BitmapDescriptorFactory.defaultMarker(markerColor)));
 
                         if (marker != null) {
                             marker.setTag(t);
+                            marker.setAlpha(isCurrentlyOpen(t.openingHours) ? 1.0f : 0.25f);
                             allMarkers.add(marker); // Save the marker for filtering!
                         }
                     }
@@ -407,7 +418,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         if (hours == null || hours.isEmpty()) return false;
 
         // Handle 24-hour edge cases easily
-        if (hours.equals("24:00-23:59") || hours.equals("00:00-23:59") || hours.equalsIgnoreCase("24 hours")) {
+        if (hours.equals("24.00-23.59") || hours.equals("24:00-23:59") || hours.equals("00:00-23:59") || hours.equalsIgnoreCase("24 hours")) {
             return true;
         }
 
