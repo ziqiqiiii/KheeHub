@@ -19,6 +19,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -37,6 +39,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
     private TextView tvToiletName;
     private TextView tvToiletDetails;
+    private TextView tvStatus;
+    private TextView tvOpeningHours;
+    private ChipGroup cgTags;
     private List<Toilet> allToilets = new ArrayList<>();
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
@@ -65,6 +70,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         tvToiletName = view.findViewById(R.id.tv_toilet_name);
         tvToiletDetails = view.findViewById(R.id.tv_toilet_details);
+
+        // Initialize new UI elements
+        tvStatus = view.findViewById(R.id.tv_status);
+        tvOpeningHours = view.findViewById(R.id.tv_opening_hours);
+        cgTags = view.findViewById(R.id.cg_tags);
 
         // Find Nearest button
         ExtendedFloatingActionButton btnNearest = view.findViewById(R.id.btn_nearest);
@@ -128,17 +138,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 LatLng pos = new LatLng(nearest.lat, nearest.lng);
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 18f));
 
-                tvToiletName.setText(nearest.name);
-
-                String distance;
-                if (minDistance < 1000) {
-                    distance = String.format("%.0f m away", minDistance);
-                } else {
-                    distance = String.format("%.1f km away", minDistance / 1000);
-                }
-                tvToiletDetails.setText("Floor: " + nearest.floor + " | " + distance);
-
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                // Use the new helper method!
+                updateBottomSheetUI(nearest, minDistance);
             }
         });
     }
@@ -180,10 +181,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             Toilet clickedToilet = (Toilet) marker.getTag();
 
             if (clickedToilet != null) {
-                tvToiletName.setText(clickedToilet.name);
-                tvToiletDetails.setText("Floor: " + clickedToilet.floor + " | Rating: " + clickedToilet.rating);
-
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                // Use the new helper method!
+                updateBottomSheetUI(clickedToilet, null);
             }
             return true;
         });
@@ -218,9 +217,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(t.lat, t.lng), 18f));
 
-                tvToiletName.setText(t.name);
-                tvToiletDetails.setText("Floor: " + t.floor + " | Rating: " + t.rating);
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                // Use the new helper method!
+                updateBottomSheetUI(t, null);
 
                 found = true;
                 break;
@@ -230,5 +228,58 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         if (!found) {
             Toast.makeText(getContext(), "No toilet found matching that search.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void updateBottomSheetUI(Toilet toilet, Float distanceInMeters) {
+        tvToiletName.setText(toilet.name);
+
+        // 1. Distance & Floor
+        String detailsStr = "Floor: " + toilet.floor;
+        if (distanceInMeters != null) {
+            detailsStr += (distanceInMeters < 1000) ?
+                    String.format(" | %.0f m away", distanceInMeters) :
+                    String.format(" | %.1f km away", distanceInMeters / 1000);
+        } else {
+            detailsStr += " | Rating: " + toilet.rating;
+        }
+        tvToiletDetails.setText(detailsStr);
+
+        // 2. Status (1 = Available, 0 = Not Available)
+        if (toilet.status == 1) {
+            tvStatus.setText("Available");
+            tvStatus.setTextColor(0xFF388E3C); // Green text
+            tvStatus.setBackgroundColor(0xFFE8F5E9); // Light Green box
+        } else {
+            tvStatus.setText("Not Available");
+            tvStatus.setTextColor(0xFFD32F2F); // Red text
+            tvStatus.setBackgroundColor(0xFFFFEBEE); // Light Red box
+        }
+
+        // 3. Opening Hours
+        if (toilet.openingHours != null && !toilet.openingHours.isEmpty()) {
+            tvOpeningHours.setText(toilet.openingHours);
+            tvOpeningHours.setVisibility(View.VISIBLE);
+        } else {
+            tvOpeningHours.setVisibility(View.GONE);
+        }
+
+        // 4. Tags
+        cgTags.removeAllViews();
+        if (toilet.tags != null && !toilet.tags.isEmpty()) {
+            for (String tag : toilet.tags) {
+                Chip chip = new Chip(requireContext());
+                // Capitalize the first letter for a cleaner look
+                String displayTag = tag.substring(0, 1).toUpperCase() + tag.substring(1);
+                chip.setText(displayTag);
+                chip.setCheckable(false);
+                chip.setClickable(false);
+                cgTags.addView(chip);
+            }
+            cgTags.setVisibility(View.VISIBLE);
+        } else {
+            cgTags.setVisibility(View.GONE);
+        }
+
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 }
