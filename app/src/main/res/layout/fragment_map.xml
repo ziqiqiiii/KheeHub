@@ -48,6 +48,14 @@
                 android:imeOptions="actionSearch"
                 android:maxLines="1"
                 android:singleLine="true" />
+
+            <ImageButton
+                android:id="@+id/btn_filter"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                app:tint="#000000" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

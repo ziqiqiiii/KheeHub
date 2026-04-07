@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -29,8 +30,14 @@ import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.widget.ImageButton;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.switchmaterial.SwitchMaterial;
+
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Calendar;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
@@ -45,6 +52,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private List<Toilet> allToilets = new ArrayList<>();
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
+
+    // NEW Filter variables
+    private List<Marker> allMarkers = new ArrayList<>();
+    private boolean isFilterOpenNow = false;
+    private List<String> currentSelectedTags = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -99,6 +111,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             }
             return false;
         });
+
+        ImageButton btnFilter = view.findViewById(R.id.btn_filter);
+        if (btnFilter != null) {
+            btnFilter.setOnClickListener(v -> showFilterDialog());
+        }
     }
 
     private void findNearestToilet() {
@@ -123,6 +140,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             float minDistance = Float.MAX_VALUE;
 
             for (Toilet t : allToilets) {
+                boolean matchesTags = true;
+                for (String requiredTag : currentSelectedTags) {
+                    if (t.tags == null || !t.tags.contains(requiredTag)) {
+                        matchesTags = false;
+                        break;
+                    }
+                }
+
+                boolean matchesOpen = true;
+                if (isFilterOpenNow) {
+                    if (t.status != 1 || !isCurrentlyOpen(t.openingHours)) {
+                        matchesOpen = false;
+                    }
+                }
+
+                if (!matchesTags || !matchesOpen) {
+                    continue;
+                }
                 float[] results = new float[1];
                 Location.distanceBetween(
                         location.getLatitude(), location.getLongitude(),
@@ -140,6 +175,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
                 // Use the new helper method!
                 updateBottomSheetUI(nearest, minDistance);
+            }
+            else{
+                Toast.makeText(requireContext(), "No nearby toilets match your active filters.", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -161,6 +199,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     allToilets.clear();
                     allToilets.addAll(downloadedToilets);
 
+                    allMarkers.clear(); // Clear the list before adding
                     for (Toilet t : allToilets) {
                         Marker marker = mMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(t.lat, t.lng))
@@ -168,6 +207,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
                         if (marker != null) {
                             marker.setTag(t);
+                            allMarkers.add(marker); // Save the marker for filtering!
                         }
                     }
 
@@ -233,15 +273,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private void updateBottomSheetUI(Toilet toilet, Float distanceInMeters) {
         tvToiletName.setText(toilet.name);
 
-        // 1. Distance & Floor
-        String detailsStr = "Floor: " + toilet.floor;
+        // 1. Floor, Rating & Distance
+        String detailsStr = "Floor: " + toilet.floor + " | Rating: " + toilet.rating;
+
+        // If we have the distance (from the Find Nearest button), add it to the end!
         if (distanceInMeters != null) {
             detailsStr += (distanceInMeters < 1000) ?
                     String.format(" | %.0f m away", distanceInMeters) :
                     String.format(" | %.1f km away", distanceInMeters / 1000);
-        } else {
-            detailsStr += " | Rating: " + toilet.rating;
         }
+
         tvToiletDetails.setText(detailsStr);
 
         // 2. Status (1 = Available, 0 = Not Available)
@@ -281,5 +322,119 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
 
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    }
+    private void showFilterDialog() {
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        // Note: Make sure you created dialog_filter.xml in your layout folder!
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_filter, null);
+        dialog.setContentView(dialogView);
+
+        SwitchMaterial switchOpenNow = dialogView.findViewById(R.id.switch_open_now);
+        ChipGroup cgFilterTags = dialogView.findViewById(R.id.cg_filter_tags);
+        Button btnApply = dialogView.findViewById(R.id.btn_apply_filter);
+
+        // Restore previous selections when opening the dialog
+        switchOpenNow.setChecked(isFilterOpenNow);
+        if (cgFilterTags != null) {
+            for (int i = 0; i < cgFilterTags.getChildCount(); i++) {
+                Chip chip = (Chip) cgFilterTags.getChildAt(i);
+                if (currentSelectedTags.contains(chip.getText().toString().toLowerCase())) {
+                    chip.setChecked(true);
+                }
+            }
+        }
+
+        btnApply.setOnClickListener(v -> {
+            // Save the states
+            isFilterOpenNow = switchOpenNow.isChecked();
+            currentSelectedTags.clear();
+
+            if (cgFilterTags != null) {
+                for (int i = 0; i < cgFilterTags.getChildCount(); i++) {
+                    Chip chip = (Chip) cgFilterTags.getChildAt(i);
+                    if (chip.isChecked()) {
+                        currentSelectedTags.add(chip.getText().toString().toLowerCase());
+                    }
+                }
+            }
+
+            // Apply logic and close
+            applyFiltersToMap();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    // Loops through all map markers and hides the ones that don't match
+    private void applyFiltersToMap() {
+        int visibleCount = 0;
+
+        for (Marker marker : allMarkers) {
+            Toilet t = (Toilet) marker.getTag();
+            if (t == null) continue;
+
+            // 1. Check Tags (Toilet must contain ALL selected tags)
+            boolean matchesTags = true;
+            for (String requiredTag : currentSelectedTags) {
+                if (t.tags == null || !t.tags.contains(requiredTag)) {
+                    matchesTags = false;
+                    break;
+                }
+            }
+
+            // 2. Check Open Status and Time
+            boolean matchesOpen = true;
+            if (isFilterOpenNow) {
+                // To be open now, status must be 1 AND current time must be within opening hours
+                if (t.status != 1 || !isCurrentlyOpen(t.openingHours)) {
+                    matchesOpen = false;
+                }
+            }
+
+            // Update marker visibility
+            boolean shouldBeVisible = matchesTags && matchesOpen;
+            marker.setVisible(shouldBeVisible);
+
+            if (shouldBeVisible) visibleCount++;
+        }
+
+        Toast.makeText(getContext(), "Found " + visibleCount + " matching toilets", Toast.LENGTH_SHORT).show();
+    }
+
+    // Checks if the current phone time is within the toilet's operating hours string
+    private boolean isCurrentlyOpen(String hours) {
+        if (hours == null || hours.isEmpty()) return false;
+
+        // Handle 24-hour edge cases easily
+        if (hours.equals("24:00-23:59") || hours.equals("00:00-23:59") || hours.equalsIgnoreCase("24 hours")) {
+            return true;
+        }
+
+        try {
+            String[] parts = hours.split("-");
+            if (parts.length != 2) return false;
+
+            Calendar calendar = Calendar.getInstance();
+            int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+            int currentMinute = calendar.get(Calendar.MINUTE);
+            int currentTimeInMinutes = (currentHour * 60) + currentMinute;
+
+            String[] openParts = parts[0].split(":");
+            int openTimeInMinutes = (Integer.parseInt(openParts[0].trim()) * 60) + Integer.parseInt(openParts[1].trim());
+
+            String[] closeParts = parts[1].split(":");
+            int closeTimeInMinutes = (Integer.parseInt(closeParts[0].trim()) * 60) + Integer.parseInt(closeParts[1].trim());
+
+            if (openTimeInMinutes <= closeTimeInMinutes) {
+                return currentTimeInMinutes >= openTimeInMinutes && currentTimeInMinutes <= closeTimeInMinutes;
+            } else {
+                // Handles hours that cross midnight (e.g., 22:00 - 06:00)
+                return currentTimeInMinutes >= openTimeInMinutes || currentTimeInMinutes <= closeTimeInMinutes;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false; // If the string is formatted wrong in Firestore, assume closed
+        }
     }
 }
