@@ -15,7 +15,10 @@ public class Toilet {
 
     @Override
     public String toString() {
-        return "Toilet{name='" + name + "', lat=" + lat + ", lng=" + lng +
-                ", rating=" + rating + ", floor='" + floor + "'}";
+        return name;
     }
+//    public String toString() {
+//        return "Toilet{name='" + name + "', lat=" + lat + ", lng=" + lng +
+//                ", rating=" + rating + ", floor='" + floor + "'}";
+//    }
 }

@@ -36,26 +36,23 @@
                 android:importantForAccessibility="no"
                 app:tint="#757575" />
 
-            <EditText
+            <AutoCompleteTextView
                 android:id="@+id/et_search"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:hint="Search by name or floor..."
-                android:paddingStart="12dp"
-                android:inputType="text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search toilets..."
                 android:imeOptions="actionSearch"
-                android:maxLines="1"
-                android:singleLine="true" />
+                android:inputType="text"
+                android:completionThreshold="1"
+                android:dropDownVerticalOffset="4dp" />
 
-            <ImageButton
-                android:id="@+id/btn_filter"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_sort_by_size"
-                app:tint="#000000" />
+<!--            <ImageButton-->
+<!--                android:id="@+id/btn_filter"-->
+<!--                android:layout_width="36dp"-->
+<!--                android:layout_height="36dp"-->
+<!--                android:background="?attr/selectableItemBackgroundBorderless"-->
+<!--                android:src="@android:drawable/ic_menu_sort_by_size"-->
+<!--                app:tint="#000000" />-->
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -78,7 +75,7 @@
     <LinearLayout
         android:id="@+id/bottom_sheet_layout"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="450dp"
         android:background="@drawable/bottom_sheet_bg"
         android:elevation="50dp"
         android:orientation="vertical"
@@ -188,6 +185,13 @@
                 android:layout_marginStart="8dp"
                 android:text="Details" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_edit_toilet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 

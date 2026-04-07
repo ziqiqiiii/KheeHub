@@ -32,7 +32,9 @@ public class AddFragment extends Fragment {
         EditText etLng    = view.findViewById(R.id.et_lng);
         EditText etRating = view.findViewById(R.id.et_rating);
         EditText etHours  = view.findViewById(R.id.et_opening_hours);
-        SwitchMaterial switchStatus = view.findViewById(R.id.switch_status);
+        RadioGroup rgStatus = view.findViewById(R.id.rg_status);
+        RadioButton rbAvailable = view.findViewById(R.id.rb_available);
+        RadioButton rbUnavailable = view.findViewById(R.id.rb_unavailable);
         ChipGroup cgTags  = view.findViewById(R.id.cg_add_tags);
         Button btnAdd     = view.findViewById(R.id.btn_add);
 
@@ -47,7 +49,7 @@ public class AddFragment extends Fragment {
                 t.openingHours = etHours.getText().toString().trim();
 
                 // Set status: 1 for available (switch is on), 0 for unavailable
-                t.status = switchStatus.isChecked() ? 1 : 0;
+                t.status = rbAvailable.isChecked() ? 1 : 0;
 
                 // Loop through the ChipGroup and collect the selected tags
                 List<String> selectedTags = new ArrayList<>();

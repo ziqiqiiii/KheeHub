@@ -7,8 +7,11 @@ import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
@@ -58,6 +61,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private List<Marker> allMarkers = new ArrayList<>();
     private boolean isFilterOpenNow = false;
     private List<String> currentSelectedTags = new ArrayList<>();
+    private Toilet currentToilet;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -94,29 +98,45 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         btnNearest.setOnClickListener(v -> findNearestToilet());
 
         // Search Bar
-        EditText etSearch = view.findViewById(R.id.et_search);
+        AutoCompleteTextView etSearch = view.findViewById(R.id.et_search);
+
+        // Set up the adapter after toilets load (we'll call setupSearchAdapter later)
+        etSearch.setOnItemClickListener((parent, v1, position, id) -> {
+            Toilet selected = (Toilet) parent.getItemAtPosition(position);
+            if (selected != null) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(selected.lat, selected.lng), 18f));
+                updateBottomSheetUI(selected, null);
+            }
+            InputMethodManager imm = (InputMethodManager) requireActivity()
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+        });
+
+        // Keep the IME search action as fallback
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 String query = etSearch.getText().toString().trim().toLowerCase();
-
-                if (!query.isEmpty()) {
-                    searchForToilet(query);
-                }
-
-                InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) {
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
-
+                if (!query.isEmpty()) searchForToilet(query);
+                InputMethodManager imm = (InputMethodManager) requireActivity()
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                etSearch.dismissDropDown();
                 return true;
             }
             return false;
         });
+        Button btnEdit = view.findViewById(R.id.btn_edit_toilet);
+        btnEdit.setOnClickListener(v -> {
+            if (currentToilet != null) {
+                showEditDialog(currentToilet);
+            }
+        });
 
-        ImageButton btnFilter = view.findViewById(R.id.btn_filter);
-        if (btnFilter != null) {
-            btnFilter.setOnClickListener(v -> showFilterDialog());
-        }
+//        ImageButton btnFilter = view.findViewById(R.id.btn_filter);
+//        if (btnFilter != null) {
+//            btnFilter.setOnClickListener(v -> showFilterDialog());
+//        }
     }
 
     private void findNearestToilet() {
@@ -226,6 +246,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                 new LatLng(allToilets.get(0).lat, allToilets.get(0).lng), 13f));
                     }
+                    if (getView() != null) {
+                        AutoCompleteTextView etSearch = getView().findViewById(R.id.et_search);
+                        ToiletSearchAdapter adapter = new ToiletSearchAdapter(requireContext(), allToilets);
+                        etSearch.setAdapter(adapter);
+                    }
+
+                    if (!allToilets.isEmpty()) {
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(allToilets.get(0).lat, allToilets.get(0).lng), 13f));
+                    }
                 });
 
         mMap.setOnMarkerClickListener(marker -> {
@@ -275,13 +305,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 break;
             }
         }
-
         if (!found) {
             Toast.makeText(getContext(), "No toilet found matching that search.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void updateBottomSheetUI(Toilet toilet, Float distanceInMeters) {
+        currentToilet = toilet;
         tvToiletName.setText(toilet.name);
 
         // 1. Floor, Rating & Distance
@@ -454,4 +484,128 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             return false; // If the string is formatted wrong in Firestore, assume closed
         }
     }
+    private void showEditDialog(Toilet toilet) {
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_toilet, null);
+        dialog.setContentView(dialogView);
+
+        // Find views
+        EditText editName = dialogView.findViewById(R.id.edit_name);
+        EditText editFloor = dialogView.findViewById(R.id.edit_floor);
+        EditText editRating = dialogView.findViewById(R.id.edit_rating);
+        EditText editOpeningHours = dialogView.findViewById(R.id.edit_opening_hours);
+        RadioGroup rgStatus = dialogView.findViewById(R.id.rg_status);
+        RadioButton rbAvailable = dialogView.findViewById(R.id.rb_available);
+        RadioButton rbUnavailable = dialogView.findViewById(R.id.rb_unavailable);
+        ChipGroup cgEditTags = dialogView.findViewById(R.id.cg_edit_tags);
+        Button btnSave = dialogView.findViewById(R.id.btn_save);
+
+        // Pre-fill current values
+        editName.setText(toilet.name);
+        editFloor.setText(toilet.floor);
+        editRating.setText(String.valueOf(toilet.rating));
+        editOpeningHours.setText(toilet.openingHours);
+
+        if (toilet.status == 1) {
+            rbAvailable.setChecked(true);
+        } else {
+            rbUnavailable.setChecked(true);
+        }
+
+        // Pre-check tags
+        if (toilet.tags != null) {
+            for (int i = 0; i < cgEditTags.getChildCount(); i++) {
+                Chip chip = (Chip) cgEditTags.getChildAt(i);
+                if (toilet.tags.contains(chip.getText().toString().toLowerCase())) {
+                    chip.setChecked(true);
+                }
+            }
+        }
+
+        // Save button
+        btnSave.setOnClickListener(v -> {
+            String newName = editName.getText().toString().trim();
+            String newFloor = editFloor.getText().toString().trim();
+            String newRating = editRating.getText().toString().trim();
+            String newHours = editOpeningHours.getText().toString().trim();
+            int newStatus = rbAvailable.isChecked() ? 1 : 0;
+
+            // Collect selected tags
+            List<String> newTags = new ArrayList<>();
+            for (int i = 0; i < cgEditTags.getChildCount(); i++) {
+                Chip chip = (Chip) cgEditTags.getChildAt(i);
+                if (chip.isChecked()) {
+                    newTags.add(chip.getText().toString().toLowerCase());
+                }
+            }
+
+            // Validate
+            if (newName.isEmpty() || newFloor.isEmpty() || newRating.isEmpty()) {
+                Toast.makeText(requireContext(), "Please fill in all fields.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Update Firestore
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("toilets")
+                    .whereEqualTo("name", toilet.name)
+                    .whereEqualTo("lat", toilet.lat)
+                    .whereEqualTo("lng", toilet.lng)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        if (!querySnapshot.isEmpty()) {
+                            String docId = querySnapshot.getDocuments().get(0).getId();
+
+                            db.collection("toilets").document(docId)
+                                    .update(
+                                            "name", newName,
+                                            "floor", newFloor,
+                                            "rating", Double.parseDouble(newRating),
+                                            "openingHours", newHours,
+                                            "status", newStatus,
+                                            "tags", newTags
+                                    )
+                                    .addOnSuccessListener(unused -> {
+                                        Toast.makeText(requireContext(), "Updated successfully!", Toast.LENGTH_SHORT).show();
+
+                                        // Update local data
+                                        toilet.name = newName;
+                                        toilet.floor = newFloor;
+                                        toilet.rating = Double.parseDouble(newRating);
+                                        toilet.openingHours = newHours;
+                                        toilet.status = newStatus;
+                                        toilet.tags = newTags;
+
+                                        // Refresh bottom sheet and marker
+                                        updateBottomSheetUI(toilet, null);
+                                        refreshMarker(toilet);
+
+                                        dialog.dismiss();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(requireContext(), "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        }
+                    });
+        });
+
+        dialog.show();
+    }
+    private void refreshMarker(Toilet toilet) {
+        for (Marker marker : allMarkers) {
+            Toilet t = (Toilet) marker.getTag();
+            if (t != null && t.lat == toilet.lat && t.lng == toilet.lng) {
+                marker.setTitle(toilet.name);
+                marker.setTag(toilet);
+
+                float markerColor = isCurrentlyOpen(toilet.openingHours) ?
+                        BitmapDescriptorFactory.HUE_RED :
+                        BitmapDescriptorFactory.HUE_ROSE;
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(markerColor));
+                marker.setAlpha(isCurrentlyOpen(toilet.openingHours) ? 1.0f : 0.25f);
+                break;
+            }
+        }
+    }
+
 }
