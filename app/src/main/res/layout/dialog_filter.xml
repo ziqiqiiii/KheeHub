@@ -41,7 +41,6 @@
         android:layout_marginBottom="24dp">
 
         <com.google.android.material.chip.Chip android:id="@+id/chip_filter_family" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Family" />
-        <com.google.android.material.chip.Chip android:id="@+id/chip_filter_accessible" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Accessible" />
         <com.google.android.material.chip.Chip android:id="@+id/chip_filter_bidet" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bidet" />
         <com.google.android.material.chip.Chip android:id="@+id/chip_filter_shower" style="@style/Widget.MaterialComponents.Chip.Filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Shower" />
         <com.google.android.material.chip.Chip
