@@ -119,15 +119,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             btnSearchIcon.setOnClickListener(v -> executeSearch(etSearch));
         }
 
-//        etSearch.setOnEditorActionListener((v, actionId, event) -> {
-//            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-//                executeSearch(etSearch);
-//                return true;
-//            }
-//            return false;
-//        });
-
-
 
         // Keep the IME search action as fallback
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
@@ -169,6 +160,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void findNearestToilet() {
+
         if (ActivityCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
@@ -483,7 +475,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         if (hours == null || hours.isEmpty()) return false;
 
         // Handle 24-hour edge cases easily
-        if (hours.equals("24.00-23.59") || hours.equals("24:00-23:59") || hours.equals("00:00-23:59") || hours.equalsIgnoreCase("24 hours")) {
+        if (hours.equals("24.00-23.59") || hours.equals("24:00-23:59") || hours.equals("00:00-23:59")
+                || hours.equals("00.00-23.59") || hours.equalsIgnoreCase("24 hours")) {
             return true;
         }
 
@@ -495,11 +488,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
             int currentMinute = calendar.get(Calendar.MINUTE);
             int currentTimeInMinutes = (currentHour * 60) + currentMinute;
-
-            String[] openParts = parts[0].split(":");
+//            Log.d("TimeDebug", "Current time: " + currentHour + ":" + currentMinute);
+            String[] openParts = parts[0].split("[:.]");
             int openTimeInMinutes = (Integer.parseInt(openParts[0].trim()) * 60) + Integer.parseInt(openParts[1].trim());
 
-            String[] closeParts = parts[1].split(":");
+            String[] closeParts = parts[1].split("[:.]");
             int closeTimeInMinutes = (Integer.parseInt(closeParts[0].trim()) * 60) + Integer.parseInt(closeParts[1].trim());
 
             if (openTimeInMinutes <= closeTimeInMinutes) {
