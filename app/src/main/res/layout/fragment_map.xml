@@ -105,7 +105,7 @@
 
         <!-- Floor / Rating -->
         <TextView
-            android:id="@+id/tv_toilet_details"
+            android:id="@+id/tv_toilet_reviews"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -179,12 +179,12 @@
                 app:icon="@android:drawable/ic_menu_directions" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_details"
+                android:id="@+id/btn_reviews"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Details" />
+                android:text="Reviews" />
         </LinearLayout>
 
         <Button
