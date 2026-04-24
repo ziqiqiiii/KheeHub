@@ -1,24 +1,3 @@
-//package com.example.kheehub;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//
-//public class Toilet {
-//    public String name = "";
-//    public double lat = 0.0;
-//    public double lng = 0.0;
-//    public double rating = 0.0;
-//    public String floor = "";
-//    public String openingHours = "";
-//    public int status = 0;
-//    public List<String> tags = new ArrayList<>();
-//
-//    @Override
-//    public String toString() {
-//        return name;
-//    }
-//}
-
 package com.example.kheehub;
 
 import java.util.ArrayList;
@@ -26,8 +5,6 @@ import java.util.List;
 
 public class Toilet {
 
-    // CHANGED: All fields are now private — information hiding applied.
-    // Firestore still works because it uses the public getters/setters below.
     private String name = "";
     private double lat = 0.0;
     private double lng = 0.0;
@@ -37,10 +14,8 @@ public class Toilet {
     private int status = 0;
     private List<String> tags = new ArrayList<>();
 
-    // Required by Firestore for deserialization
     public Toilet() {}
 
-    // --- Getters ---
     public String getName() { return name; }
     public double getLat() { return lat; }
     public double getLng() { return lng; }
@@ -50,7 +25,6 @@ public class Toilet {
     public int getStatus() { return status; }
     public List<String> getTags() { return tags; }
 
-    // --- Setters (required by Firestore for deserialization) ---
     public void setName(String name) { this.name = name; }
     public void setLat(double lat) { this.lat = lat; }
     public void setLng(double lng) { this.lng = lng; }
@@ -60,8 +34,6 @@ public class Toilet {
     public void setStatus(int status) { this.status = status; }
     public void setTags(List<String> tags) { this.tags = tags; }
 
-    // ADDED: Meaningful semantic method — Tell, Don't Ask principle.
-    // Callers ask "is this toilet available?" not "is status == 1?"
     public boolean isAvailable() {
         return status == 1;
     }
