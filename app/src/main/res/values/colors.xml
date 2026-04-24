@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Toilet status badge colors -->
+    <color name="status_open_text">#FF388E3C</color>
+    <color name="status_open_bg">#FFE8F5E9</color>
+    <color name="status_closed_text">#FFF57C00</color>
+    <color name="status_closed_bg">#FFFFE0B2</color>
+    <color name="status_unavailable_text">#FFD32F2F</color>
+    <color name="status_unavailable_bg">#FFFFEBEE</color>
 </resources>
