@@ -1,3 +1,27 @@
 <resources>
-    <string name="app_name">KheeHub</string>
+    <string name="app_name">KheeHubb</string>
+
+    <!-- Status labels -->
+    <string name="status_open">Open</string>
+    <string name="status_closed">Close</string>
+    <string name="status_unavailable">Under Construction</string>
+
+    <!-- Map messages -->
+    <string name="no_toilets_loaded">No toilets loaded yet.</string>
+    <string name="no_location">Unable to get your location.</string>
+    <string name="no_matching_nearby">No nearby toilets match your active filters.</string>
+    <string name="load_toilets_failed">Failed to load toilets: %1$s</string>
+    <string name="no_location_permission">Location permission is needed to show your position.</string>
+    <string name="no_toilet_found">No toilet found matching that search.</string>
+    <string name="toilets_matching_count">Found %1$d matching toilets</string>
+
+    <!-- Edit dialog messages -->
+    <string name="edit_missing_fields">Please fill in all fields.</string>
+    <string name="update_success">Updated successfully!</string>
+    <string name="update_failed">Update failed: %1$s</string>
+
+    <!-- Add fragment messages -->
+    <string name="toilet_added">Toilet added successfully!</string>
+    <string name="toilet_add_error">Error adding toilet: %1$s</string>
+    <string name="add_number_fields_error">Please fill in all number fields correctly.</string>
 </resources>

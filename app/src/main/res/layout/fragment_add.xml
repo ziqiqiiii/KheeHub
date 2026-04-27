@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add New Toilet"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText android:id="@+id/et_name"   android:hint="Name (e.g. Blk 725 UC Rd East)" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/et_floor"  android:hint="Floor (e.g. G, L1)" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+            <EditText android:id="@+id/et_lat" android:hint="Latitude" android:inputType="numberDecimal" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginEnd="8dp"/>
+            <EditText android:id="@+id/et_lng" android:hint="Longitude" android:inputType="numberDecimal" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <EditText android:id="@+id/et_rating" android:hint="Rating (0.0 - 5.0)" android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/et_opening_hours" android:hint="Opening Hours (e.g. 24:00-23:59)" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rg_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/rb_available"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Available" />
+
+            <RadioButton
+                android:id="@+id/rb_unavailable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Under Construction" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Features:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/cg_add_tags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_family"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Family" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_bidet"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bidet" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_shower"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shower" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_handicap"
+                style="@style/Widget.MaterialComponents.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Handicap" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <Button
+            android:id="@+id/btn_add"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Add Toilet to Database"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+</ScrollView>
