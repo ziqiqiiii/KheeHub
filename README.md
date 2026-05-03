@@ -1,4 +1,5 @@
 # KheeHubb
+![Info Sys 1D Poster](1D_java.png)
 
 KheeHubb is an Android application designed to help users locate and manage public toilets. It features an interactive map powered by Google Maps, real-time data storage via Firebase Firestore, and user-friendly tools for searching, filtering, and adding toilet locations.
 
